@@ -14,6 +14,7 @@ import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.projectdetail.ProjectDetailViewModel
 import com.example.magicloop.ui.projectdetail.YarnPickerViewModel
 import com.example.magicloop.ui.projectlist.ProjectListViewModel
+import com.example.magicloop.ui.sharecard.ShareCardViewModel
 import com.example.magicloop.ui.stash.StashViewModel
 import com.example.magicloop.ui.streak.StreakViewModel
 
@@ -61,6 +62,11 @@ class ViewModelFactory(
                 requireNotNull(projectId)
                 YarnPickerViewModel(yarnRepository, projectId) as T
             }
+            modelClass.isAssignableFrom(ShareCardViewModel::class.java) -> {
+                requireNotNull(projectId)
+                ShareCardViewModel(repository, streakRepository, projectId) as T
+            }
+
 
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

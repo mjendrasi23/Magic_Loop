@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,7 +19,8 @@ import com.example.magicloop.ui.pattern.PatternSheetSection
 fun ProjectDetailScreen(
     viewModel: ProjectDetailViewModel,
     patternViewModel: PatternViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onShareCardClick: (Long) -> Unit
 ) {
     val project by viewModel.project.collectAsState()
     val counters by viewModel.counters.collectAsState()
@@ -39,6 +41,11 @@ fun ProjectDetailScreen(
                     if (project?.status == "ACTIVE") {
                         TextButton(onClick = { showCompleteDialog = true }) {
                             Text("Završi")
+                        }
+                    }
+                    if (project?.status == "COMPLETED") {
+                        IconButton(onClick = { onShareCardClick(project!!.id) }) {
+                            Icon(Icons.Filled.Share, contentDescription = "Podijeli karticu")
                         }
                     }
                 }

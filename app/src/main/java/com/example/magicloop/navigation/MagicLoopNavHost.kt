@@ -33,6 +33,8 @@ import com.example.magicloop.ui.projectlist.ProjectListScreen
 import com.example.magicloop.ui.projectlist.ProjectListViewModel
 import com.example.magicloop.ui.settings.ReminderSettingsScreen
 import com.example.magicloop.ui.settings.ReminderSettingsViewModel
+import com.example.magicloop.ui.sharecard.ShareCardScreen
+import com.example.magicloop.ui.sharecard.ShareCardViewModel
 import com.example.magicloop.ui.stash.StashScreen
 import com.example.magicloop.ui.stash.StashViewModel
 import com.example.magicloop.ui.streak.StreakViewModel
@@ -46,6 +48,10 @@ sealed class Screen(val route: String) {
     data object Archive : Screen("archive")
 
     data object Stash : Screen("stash")
+
+    data object ShareCard : Screen("share_card/{projectId}") {
+        fun createRoute(projectId: Long) = "share_card/$projectId"
+    }
 }
 
 @Composable
@@ -100,6 +106,7 @@ fun MagicLoopNavHost(
                 onStashClick = {
                     navController.navigate(Screen.Stash.route)
                 }
+
             )
         }
 
@@ -123,7 +130,10 @@ fun MagicLoopNavHost(
             ProjectDetailScreen(
                 viewModel = viewModel,
                 patternViewModel = patternViewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack()},
+                onShareCardClick = {projectId ->
+            navController.navigate(Screen.ShareCard.createRoute(projectId)) }
+
             )
         }
         composable(Screen.Archive.route) {
@@ -164,6 +174,18 @@ fun MagicLoopNavHost(
             }
             val viewModel: StashViewModel = viewModel(factory = factory)
             StashScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.ShareCard.route) { backStackEntry ->
+            val projectId = backStackEntry.arguments
+                ?.getString("projectId")?.toLongOrNull() ?: return@composable
+
+            val factory = remember(projectId) {
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, yarnRepository, projectId)
+            }
+            val viewModel: ShareCardViewModel = viewModel(factory = factory)
+
+            ShareCardScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
     }}
     }
