@@ -8,14 +8,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.magicloop.MagicLoopApplication
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
+import com.example.magicloop.notification.ReminderScheduler
 import com.example.magicloop.ui.common.ViewModelFactory
 import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.projectdetail.ProjectDetailScreen
 import com.example.magicloop.ui.projectdetail.ProjectDetailViewModel
 import com.example.magicloop.ui.projectlist.ProjectListScreen
 import com.example.magicloop.ui.projectlist.ProjectListViewModel
+import com.example.magicloop.ui.settings.ReminderSettingsScreen
+import com.example.magicloop.ui.settings.ReminderSettingsViewModel
 import com.example.magicloop.ui.streak.StreakViewModel
 
 sealed class Screen(val route: String) {
@@ -70,6 +74,25 @@ fun MagicLoopNavHost(
                 patternViewModel = patternViewModel,
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable("settings") {
+            val context = LocalContext.current
+            val app = context.applicationContext as MagicLoopApplication
+
+            val settingsViewModel = remember {
+                ReminderSettingsViewModel(
+                    preferences = app.reminderPreferences,
+                    onScheduleChanged = { enabled, hour, minute ->
+                        if (enabled) {
+                            ReminderScheduler.schedule(app, hour, minute)
+                        } else {
+                            ReminderScheduler.cancel(app)
+                        }
+                    }
+                )
+            }
+
+            ReminderSettingsScreen(viewModel = settingsViewModel)
         }
     }
 }

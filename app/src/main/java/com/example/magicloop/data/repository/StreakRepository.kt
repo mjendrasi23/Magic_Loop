@@ -45,4 +45,5 @@ class StreakRepository(
 
         streakDao.upsert(updated)
     }
+    suspend fun getCurrentStreak(): StreakEntity? = streakDao.getStreak()
 }
