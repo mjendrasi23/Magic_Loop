@@ -22,6 +22,8 @@ import com.example.magicloop.data.repository.StreakRepository
 import com.example.magicloop.gamification.BadgeChecker
 import com.example.magicloop.gamification.BadgeUnlockEvents
 import com.example.magicloop.notification.ReminderScheduler
+import com.example.magicloop.ui.archive.ArchiveScreen
+import com.example.magicloop.ui.archive.ArchiveViewModel
 import com.example.magicloop.ui.common.ViewModelFactory
 import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.projectdetail.ProjectDetailScreen
@@ -38,6 +40,8 @@ sealed class Screen(val route: String) {
         fun createRoute(projectId: Long) = "project_detail/$projectId"
     }
     data object Settings : Screen("settings")
+    data object Archive : Screen("archive")
+
 }
 
 @Composable
@@ -49,6 +53,8 @@ fun MagicLoopNavHost(
     navController: NavHostController = rememberNavController()
 ) {
     val factory = remember(repository) { ViewModelFactory(repository,streakRepository,badgeRepository,badgeChecker) }
+
+
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -82,6 +88,9 @@ fun MagicLoopNavHost(
                 },
                 onSettingsClick = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onArchiveClick = {
+                    navController.navigate(Screen.Archive.route)
                 }
             )
         }
@@ -93,8 +102,8 @@ fun MagicLoopNavHost(
                 ?.getString("projectId")?.toLongOrNull() ?: return@composable
 
             val context = LocalContext.current
-            val detailFactory = remember(repository, streakRepository, projectId) {
-                ViewModelFactory(repository, streakRepository,badgeRepository,badgeChecker, projectId)
+            val detailFactory = remember(repository, streakRepository, badgeRepository, badgeChecker, projectId, context) {
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, projectId, context.applicationContext)
             }
             val patternFactory = remember(repository, streakRepository, projectId, context) {
                 ViewModelFactory(repository, streakRepository,badgeRepository,badgeChecker, projectId, context.applicationContext)
@@ -109,6 +118,18 @@ fun MagicLoopNavHost(
                 onBack = { navController.popBackStack() }
             )
         }
+        composable(Screen.Archive.route) {
+            val factory = remember(repository) { ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker) }
+            val viewModel: ArchiveViewModel = viewModel(factory = factory)
+            ArchiveScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() },
+                onProjectClick = { projectId ->
+                    navController.navigate(Screen.ProjectDetail.createRoute(projectId))
+                }
+            )
+        }
+
         composable(Screen.Settings.route) {
             val context = LocalContext.current
             val app = context.applicationContext as MagicLoopApplication

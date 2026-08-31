@@ -1,9 +1,13 @@
 package com.example.magicloop.ui.projectdetail
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.magicloop.data.local.entity.CounterEntity
 import com.example.magicloop.data.local.entity.ProjectEntity
+import com.example.magicloop.data.local.entity.ProjectImageEntity
+import com.example.magicloop.data.local.util.ImageFileManager
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
 import com.example.magicloop.gamification.BadgeUnlockEvents
@@ -17,8 +21,10 @@ class ProjectDetailViewModel(
     private val repository: ProjectRepository,
     private val streakRepository: StreakRepository,
     private val projectId: Long,
-    private val badgeChecker: BadgeChecker
-) : ViewModel() {
+    private val badgeChecker: BadgeChecker,
+    private val appContext: Context,
+
+    ) : ViewModel() {
 
     val project: StateFlow<ProjectEntity?> = repository.getProject(projectId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -76,6 +82,27 @@ class ProjectDetailViewModel(
         }
     }
 
+    val images: StateFlow<List<ProjectImageEntity>> = repository.getImages(projectId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun addImage(uri: Uri) {
+        viewModelScope.launch {
+            val path = ImageFileManager.importImage(appContext, uri, projectId)
+            repository.addImage(
+                ProjectImageEntity(projectId = projectId, imagePath = path)
+            )
+            val badges = badgeChecker.onPhotoAdded()
+            BadgeUnlockEvents.emitAll(badges)
+        }
+    }
+
+    fun deleteImage(image: ProjectImageEntity) {
+        viewModelScope.launch {
+            repository.deleteImage(image)
+            ImageFileManager.deleteImage(image.imagePath)
+        }
+    }
+
     fun markCompleted() {
         viewModelScope.launch {
             val current = project.value ?: return@launch
@@ -84,6 +111,15 @@ class ProjectDetailViewModel(
             )
             val badges = badgeChecker.onProjectCompleted()
             BadgeUnlockEvents.emitAll(badges)
+        }
+    }
+
+    fun updateProjectDetails(needleSize: String?, yarnInfo: String?, notes: String?) {
+        viewModelScope.launch {
+            val current = project.value ?: return@launch
+            repository.updateProject(
+                current.copy(needleSize = needleSize, yarnInfo = yarnInfo, notes = notes)
+            )
         }
     }
 }

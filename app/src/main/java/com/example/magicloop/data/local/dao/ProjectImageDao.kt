@@ -9,6 +9,9 @@ interface ProjectImageDao {
     @Query("SELECT * FROM project_images WHERE projectId = :projectId ORDER BY addedAt DESC")
     fun getImagesForProject(projectId: Long): Flow<List<ProjectImageEntity>>
 
+    @Query("SELECT * FROM project_images WHERE projectId = :projectId ORDER BY addedAt ASC LIMIT 1")
+    suspend fun getFirstImage(projectId: Long): ProjectImageEntity?
+
     @Insert
     suspend fun insert(image: ProjectImageEntity): Long
 

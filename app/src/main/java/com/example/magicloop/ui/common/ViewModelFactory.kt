@@ -7,6 +7,7 @@ import com.example.magicloop.data.repository.BadgeRepository
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
 import com.example.magicloop.gamification.BadgeChecker
+import com.example.magicloop.ui.archive.ArchiveViewModel
 import com.example.magicloop.ui.badges.BadgesViewModel
 import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.projectdetail.ProjectDetailViewModel
@@ -30,7 +31,8 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(ProjectDetailViewModel::class.java) -> {
                 requireNotNull(projectId) { "projectId je obavezan" }
-                ProjectDetailViewModel(repository, streakRepository, projectId ,badgeChecker) as T
+                requireNotNull(appContext) { "appContext je obavezan" }
+                ProjectDetailViewModel(repository, streakRepository, projectId ,badgeChecker,appContext) as T
             }
 
             modelClass.isAssignableFrom(PatternViewModel::class.java) -> {
@@ -44,6 +46,9 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(BadgesViewModel::class.java) ->
                 BadgesViewModel(badgeRepository) as T
+
+            modelClass.isAssignableFrom(ArchiveViewModel::class.java) ->
+                ArchiveViewModel(repository) as T
 
 
 

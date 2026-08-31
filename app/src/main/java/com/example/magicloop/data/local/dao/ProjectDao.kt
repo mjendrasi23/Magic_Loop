@@ -15,6 +15,8 @@ interface ProjectDao {
     @Query("SELECT * FROM projects")
     suspend fun getAllProjectsSnapshot(): List<ProjectEntity>
 
+    @Query("SELECT * FROM projects WHERE status = 'COMPLETED' ORDER BY completedAt DESC")
+    fun getCompletedProjects(): Flow<List<ProjectEntity>>
 
     @Insert
     suspend fun insert(project: ProjectEntity): Long

@@ -22,7 +22,10 @@ fun ProjectDetailScreen(
 ) {
     val project by viewModel.project.collectAsState()
     val counters by viewModel.counters.collectAsState()
+    val images by viewModel.images.collectAsState()
     var showAddCounterDialog by remember { mutableStateOf(false) }
+    var showCompleteDialog by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -31,6 +34,12 @@ fun ProjectDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Natrag")
+                    }
+                },actions = {
+                    if (project?.status == "ACTIVE") {
+                        TextButton(onClick = { showCompleteDialog = true }) {
+                            Text("Završi")
+                        }
                     }
                 }
             )
@@ -48,6 +57,12 @@ fun ProjectDetailScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                ProjectDetailsCard(
+                    project = project,
+                    onEditClick = { showDetailsDialog = true }
+                )
+            }
             item {
                 Text(
                     text = "Brojači",
@@ -74,6 +89,15 @@ fun ProjectDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 PatternSheetSection(viewModel = patternViewModel)
             }
+
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                ProjectImagesSection(
+                    images = images,
+                    onAddImage = { uri -> viewModel.addImage(uri) },
+                    onDeleteImage = { viewModel.deleteImage(it) }
+                )
+            }
         }
     }
 
@@ -83,6 +107,33 @@ fun ProjectDetailScreen(
             onConfirm = { label ->
                 viewModel.addCounter(label)
                 showAddCounterDialog = false
+            }
+        )
+    }
+    if (showCompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showCompleteDialog = false },
+            title = { Text("Završi projekt?") },
+            text = { Text("Projekt će biti premješten u arhivu dovršenih radova.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.markCompleted()
+                    showCompleteDialog = false
+                }) { Text("Završi") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompleteDialog = false }) { Text("Odustani") }
+            }
+        )
+    }
+
+    if (showDetailsDialog) {
+        EditProjectDetailsDialog(
+            project = project,
+            onDismiss = { showDetailsDialog = false },
+            onConfirm = { needle, yarn, notes ->
+                viewModel.updateProjectDetails(needle, yarn, notes)
+                showDetailsDialog = false
             }
         )
     }
@@ -111,6 +162,89 @@ private fun AddCounterDialog(
             TextButton(onClick = { onConfirm(label) }, enabled = label.isNotBlank()) {
                 Text("Dodaj")
             }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Odustani") }
+        }
+    )
+}
+
+@Composable
+private fun ProjectDetailsCard(
+    project: com.example.magicloop.data.local.entity.ProjectEntity?,
+    onEditClick: () -> Unit
+) {
+    if (project == null) return
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Detalji projekta", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = onEditClick) { Text("Uredi") }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            DetailRow("Igle", project.needleSize ?: "Nije postavljeno")
+            DetailRow("Pređa", project.yarnInfo ?: "Nije postavljeno")
+            if (!project.notes.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(project.notes, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label: ",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(text = value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun EditProjectDetailsDialog(
+    project: com.example.magicloop.data.local.entity.ProjectEntity?,
+    onDismiss: () -> Unit,
+    onConfirm: (String?, String?, String?) -> Unit
+) {
+    var needle by remember { mutableStateOf(project?.needleSize.orEmpty()) }
+    var yarn by remember { mutableStateOf(project?.yarnInfo.orEmpty()) }
+    var notes by remember { mutableStateOf(project?.notes.orEmpty()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Uredi detalje") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = needle, onValueChange = { needle = it },
+                    label = { Text("Veličina igala") }, singleLine = true
+                )
+                OutlinedTextField(
+                    value = yarn, onValueChange = { yarn = it },
+                    label = { Text("Pređa") }, singleLine = true
+                )
+                OutlinedTextField(
+                    value = notes, onValueChange = { notes = it },
+                    label = { Text("Bilješke") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(
+                    needle.ifBlank { null },
+                    yarn.ifBlank { null },
+                    notes.ifBlank { null }
+                )
+            }) { Text("Spremi") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Odustani") }

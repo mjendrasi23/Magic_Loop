@@ -39,4 +39,8 @@ class ProjectRepository(
         imageDao.getImagesForProject(projectId)
     suspend fun addImage(image: ProjectImageEntity): Long = imageDao.insert(image)
     suspend fun deleteImage(image: ProjectImageEntity) = imageDao.delete(image)
+
+    fun getCompletedProjects(): Flow<List<ProjectEntity>> = projectDao.getCompletedProjects()
+    suspend fun getFirstImageForProject(projectId: Long): ProjectImageEntity? =
+        imageDao.getFirstImage(projectId)
 }
