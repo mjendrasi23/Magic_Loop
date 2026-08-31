@@ -20,7 +20,8 @@ class MainActivity : ComponentActivity() {
                     repository = repository,
                     streakRepository = (application as MagicLoopApplication).streakRepository,
                     badgeRepository = (application as MagicLoopApplication).badgeRepository,
-                    badgeChecker = (application as MagicLoopApplication).badgeChecker
+                    badgeChecker = (application as MagicLoopApplication).badgeChecker,
+                    yarnRepository = (application as MagicLoopApplication).yarnRepository
 
                     )
             }

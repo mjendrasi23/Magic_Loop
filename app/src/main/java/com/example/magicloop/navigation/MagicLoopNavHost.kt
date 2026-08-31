@@ -19,6 +19,7 @@ import com.example.magicloop.MagicLoopApplication
 import com.example.magicloop.data.repository.BadgeRepository
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
+import com.example.magicloop.data.repository.YarnRepository
 import com.example.magicloop.gamification.BadgeChecker
 import com.example.magicloop.gamification.BadgeUnlockEvents
 import com.example.magicloop.notification.ReminderScheduler
@@ -32,6 +33,8 @@ import com.example.magicloop.ui.projectlist.ProjectListScreen
 import com.example.magicloop.ui.projectlist.ProjectListViewModel
 import com.example.magicloop.ui.settings.ReminderSettingsScreen
 import com.example.magicloop.ui.settings.ReminderSettingsViewModel
+import com.example.magicloop.ui.stash.StashScreen
+import com.example.magicloop.ui.stash.StashViewModel
 import com.example.magicloop.ui.streak.StreakViewModel
 
 sealed class Screen(val route: String) {
@@ -42,6 +45,7 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object Archive : Screen("archive")
 
+    data object Stash : Screen("stash")
 }
 
 @Composable
@@ -50,9 +54,10 @@ fun MagicLoopNavHost(
     streakRepository: StreakRepository,
     badgeRepository: BadgeRepository,
     badgeChecker: BadgeChecker,
+    yarnRepository: YarnRepository,
     navController: NavHostController = rememberNavController()
 ) {
-    val factory = remember(repository) { ViewModelFactory(repository,streakRepository,badgeRepository,badgeChecker) }
+    val factory = remember(repository) { ViewModelFactory(repository,streakRepository,badgeRepository,badgeChecker,yarnRepository) }
 
 
 
@@ -75,7 +80,7 @@ fun MagicLoopNavHost(
     NavHost(navController = navController, startDestination = Screen.ProjectList.route) {
         composable(Screen.ProjectList.route) {
             val listFactory = remember(repository, streakRepository) {
-                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker)
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, yarnRepository)
             }
             val viewModel: ProjectListViewModel = viewModel(factory = listFactory)
             val streakViewModel: StreakViewModel = viewModel(factory = listFactory)
@@ -91,6 +96,9 @@ fun MagicLoopNavHost(
                 },
                 onArchiveClick = {
                     navController.navigate(Screen.Archive.route)
+                },
+                onStashClick = {
+                    navController.navigate(Screen.Stash.route)
                 }
             )
         }
@@ -103,10 +111,10 @@ fun MagicLoopNavHost(
 
             val context = LocalContext.current
             val detailFactory = remember(repository, streakRepository, badgeRepository, badgeChecker, projectId, context) {
-                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, projectId, context.applicationContext)
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, yarnRepository,projectId, context.applicationContext)
             }
             val patternFactory = remember(repository, streakRepository, projectId, context) {
-                ViewModelFactory(repository, streakRepository,badgeRepository,badgeChecker, projectId, context.applicationContext)
+                ViewModelFactory(repository, streakRepository,badgeRepository,badgeChecker,yarnRepository, projectId, context.applicationContext)
             }
 
             val viewModel: ProjectDetailViewModel = viewModel(factory = detailFactory)
@@ -119,7 +127,7 @@ fun MagicLoopNavHost(
             )
         }
         composable(Screen.Archive.route) {
-            val factory = remember(repository) { ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker) }
+            val factory = remember(repository) { ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker,yarnRepository) }
             val viewModel: ArchiveViewModel = viewModel(factory = factory)
             ArchiveScreen(
                 viewModel = viewModel,
@@ -148,6 +156,14 @@ fun MagicLoopNavHost(
             }
 
             ReminderSettingsScreen(viewModel = settingsViewModel)
+        }
+
+        composable(Screen.Stash.route) {
+            val factory = remember(yarnRepository) {
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, yarnRepository)
+            }
+            val viewModel: StashViewModel = viewModel(factory = factory)
+            StashScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
     }}
     }

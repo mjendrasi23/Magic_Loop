@@ -15,10 +15,11 @@ import com.example.magicloop.data.local.entity.*
         PatternAnnotationEntity::class,
         ProjectImageEntity::class,
         StreakEntity::class,
-        UnlockedBadgeEntity::class
-
+        UnlockedBadgeEntity::class,
+        YarnEntity::class,
+        ProjectYarnUsageEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class MagicLoopDatabase : RoomDatabase() {
@@ -29,6 +30,9 @@ abstract class MagicLoopDatabase : RoomDatabase() {
     abstract fun streakDao(): StreakDao
 
     abstract fun badgeDao(): BadgeDao
+
+    abstract fun yarnDao(): YarnDao
+
 
 
     companion object {

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +30,7 @@ fun ProjectListScreen(
     onProjectClick: (Long) -> Unit,
     onSettingsClick: () -> Unit,
     onArchiveClick: () -> Unit,
+    onStashClick: () -> Unit,
 ) {
     val projects by viewModel.projects.collectAsState()
     val streakState by streakViewModel.uiState.collectAsState()
@@ -44,6 +46,9 @@ fun ProjectListScreen(
                     }
                     IconButton(onClick = onArchiveClick) {
                         Icon(Icons.Filled.Collections, contentDescription = "Arhiva")
+                    }
+                    IconButton(onStashClick) {
+                        Icon(Icons.Filled.Book, contentDescription = "Zaliha vune")
                     }
                 }
             )

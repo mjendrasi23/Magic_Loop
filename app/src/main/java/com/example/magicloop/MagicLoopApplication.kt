@@ -6,6 +6,7 @@ import com.example.magicloop.data.local.ReminderPreferences
 import com.example.magicloop.data.repository.BadgeRepository
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
+import com.example.magicloop.data.repository.YarnRepository
 import com.example.magicloop.gamification.BadgeChecker
 
 class MagicLoopApplication : Application() {
@@ -32,5 +33,8 @@ class MagicLoopApplication : Application() {
     val badgeChecker by lazy {
         BadgeChecker(badgeRepository, repository, streakRepository)
     }
+
+    val yarnRepository by lazy { YarnRepository(database) }
+
 
 }
