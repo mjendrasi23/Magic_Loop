@@ -10,6 +10,8 @@ import com.example.magicloop.data.local.entity.PatternSheetEntity
 import com.example.magicloop.data.local.util.PdfFileManager
 import com.example.magicloop.data.repository.ProjectRepository
 import com.example.magicloop.data.repository.StreakRepository
+import com.example.magicloop.gamification.BadgeChecker
+import com.example.magicloop.gamification.BadgeUnlockEvents
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -17,6 +19,7 @@ class PatternViewModel(
     private val repository: ProjectRepository,
     private val streakRepository: StreakRepository,
     private val projectId: Long,
+    private val badgeChecker: BadgeChecker,
     private val appContext: Context
 ) : ViewModel() {
 
@@ -46,6 +49,10 @@ class PatternViewModel(
                 )
             )
             _currentPage.value = 0
+
+            val badges = badgeChecker.onPatternImported()
+            BadgeUnlockEvents.emitAll(badges)
+
         }
     }
 

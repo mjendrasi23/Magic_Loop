@@ -4,13 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.magicloop.data.local.entity.ProjectEntity
 import com.example.magicloop.data.repository.ProjectRepository
+import com.example.magicloop.gamification.BadgeChecker
+import com.example.magicloop.gamification.BadgeUnlockEvents
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ProjectListViewModel(
-    private val repository: ProjectRepository
+    private val repository: ProjectRepository,
+    private val badgeChecker: BadgeChecker
+
 ) : ViewModel() {
 
     val projects: StateFlow<List<ProjectEntity>> = repository.getAllProjects()
@@ -26,6 +30,8 @@ class ProjectListViewModel(
             val id = repository.createProject(
                 ProjectEntity(name = name.trim())
             )
+            val unlocked = badgeChecker.onProjectCreated()
+            BadgeUnlockEvents.emitAll(unlocked)
             onCreated(id)
         }
     }

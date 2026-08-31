@@ -12,6 +12,10 @@ interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :projectId")
     fun getProjectById(projectId: Long): Flow<ProjectEntity?>
 
+    @Query("SELECT * FROM projects")
+    suspend fun getAllProjectsSnapshot(): List<ProjectEntity>
+
+
     @Insert
     suspend fun insert(project: ProjectEntity): Long
 

@@ -16,6 +16,8 @@ class ProjectRepository(
     suspend fun updateProject(project: ProjectEntity) = projectDao.update(project)
     suspend fun deleteProject(project: ProjectEntity) = projectDao.delete(project)
 
+    suspend fun getAllProjectsSnapshot(): List<ProjectEntity> = projectDao.getAllProjectsSnapshot()
+
     fun getCounters(projectId: Long): Flow<List<CounterEntity>> =
         counterDao.getCountersForProject(projectId)
     suspend fun addCounter(counter: CounterEntity): Long = counterDao.insert(counter)

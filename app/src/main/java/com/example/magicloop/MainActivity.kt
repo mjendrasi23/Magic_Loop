@@ -18,8 +18,11 @@ class MainActivity : ComponentActivity() {
             MagicLoopTheme {
                 MagicLoopNavHost(
                     repository = repository,
-                    streakRepository = (application as MagicLoopApplication).streakRepository
-                )
+                    streakRepository = (application as MagicLoopApplication).streakRepository,
+                    badgeRepository = (application as MagicLoopApplication).badgeRepository,
+                    badgeChecker = (application as MagicLoopApplication).badgeChecker
+
+                    )
             }
         }
     }
