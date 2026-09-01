@@ -30,11 +30,14 @@ class ReminderWorker(
         val app = applicationContext as MagicLoopApplication
         val streakRepository = app.streakRepository
 
+        val isTest = inputData.getBoolean("is_test", false)
         val current = streakRepository.getCurrentStreak()
         val today = LocalDate.now().toEpochDay()
         val alreadyActiveToday = current?.lastActiveEpochDay == today
 
-        if (alreadyActiveToday) return Result.success()
+        if (alreadyActiveToday && !isTest) {
+            return Result.success()
+        }
 
         showNotification(currentStreak = current?.currentStreak ?: 0)
         return Result.success()
@@ -63,7 +66,7 @@ class ReminderWorker(
             "Vrijeme je za malo pletenja. Otvori Magic Loop i nastavi svoj projekt."
 
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Magic Loop")
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class ReminderSettingsViewModel(
     private val preferences: ReminderPreferences,
-    private val onScheduleChanged: (enabled: Boolean, hour: Int, minute: Int) -> Unit
+    private val onScheduleChanged: (enabled: Boolean, hour: Int, minute: Int) -> Unit,
 ) : ViewModel() {
 
     val settings: StateFlow<ReminderSettings> = preferences.settings
@@ -23,4 +23,5 @@ class ReminderSettingsViewModel(
             onScheduleChanged(enabled, hour, minute)
         }
     }
+
 }
