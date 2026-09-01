@@ -68,15 +68,14 @@ class ProjectDetailViewModel(
         }
     }
 
-    fun updateTarget(counter: CounterEntity, target: Int?) {
+    fun updateCounterSettings(counter: CounterEntity, target: Int?, note: String?) {
         viewModelScope.launch {
-            repository.updateCounter(counter.copy(targetValue = target))
-        }
-    }
-
-    fun updateNote(counter: CounterEntity, note: String) {
-        viewModelScope.launch {
-            repository.updateCounter(counter.copy(note = note.ifBlank { null }))
+            repository.updateCounter(
+                counter.copy(
+                    targetValue = target,
+                    note = note?.ifBlank { null }
+                )
+            )
         }
     }
 

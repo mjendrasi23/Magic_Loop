@@ -4,6 +4,8 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,7 +15,10 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderSettingsScreen(viewModel: ReminderSettingsViewModel) {
+fun ReminderSettingsScreen(
+    viewModel: ReminderSettingsViewModel,
+    onBack: () -> Unit
+) {
     val settings by viewModel.settings.collectAsState()
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -25,35 +30,59 @@ fun ReminderSettingsScreen(viewModel: ReminderSettingsViewModel) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text("Dnevni podsjetnik", style = MaterialTheme.typography.titleLarge)
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Uključi podsjetnik")
-            Switch(
-                checked = settings.enabled,
-                onCheckedChange = { checked ->
-                    if (checked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    } else {
-                        viewModel.updateReminder(checked, settings.hour, settings.minute)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Postavke podsjetnika") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Natrag")
                     }
                 }
             )
         }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Dnevni podsjetnik",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-        if (settings.enabled) {
-            OutlinedButton(onClick = { showTimePicker = true }) {
-                Text("Vrijeme: %02d:%02d".format(settings.hour, settings.minute))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Uključi podsjetnik",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Switch(
+                    checked = settings.enabled,
+                    onCheckedChange = { checked ->
+                        if (checked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            viewModel.updateReminder(checked, settings.hour, settings.minute)
+                        }
+                    }
+                )
+            }
+
+            if (settings.enabled) {
+                OutlinedButton(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Vrijeme: %02d:%02d".format(settings.hour, settings.minute))
+                }
             }
         }
     }

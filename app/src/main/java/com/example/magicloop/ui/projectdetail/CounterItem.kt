@@ -19,12 +19,18 @@ fun CounterItem(
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onReset: () -> Unit,
-    onNoteChange: (String) -> Unit,
-    onTargetChange: (Int?) -> Unit
+    onSaveSettings: (Int?, String?) -> Unit
 ) {
     var showEditor by remember { mutableStateOf(false) }
-    var noteDraft by remember(counter.id) { mutableStateOf(counter.note.orEmpty()) }
-    var targetDraft by remember(counter.id) { mutableStateOf(counter.targetValue?.toString().orEmpty()) }
+    var noteDraft by remember { mutableStateOf("") }
+    var targetDraft by remember { mutableStateOf("") }
+
+    LaunchedEffect(showEditor) {
+        if (showEditor) {
+            noteDraft = counter.note.orEmpty()
+            targetDraft = counter.targetValue?.toString().orEmpty()
+        }
+    }
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -118,27 +124,31 @@ fun CounterItem(
                         targetDraft = counter.targetValue?.toString().orEmpty()
                     }) { Text("Odustani") }
                     TextButton(onClick = {
-                        onNoteChange(noteDraft)
-                        onTargetChange(targetDraft.toIntOrNull())
+                        onSaveSettings(targetDraft.toIntOrNull(), noteDraft)
                         showEditor = false
                     }) { Text("Spremi") }
                 }
             } else {
-                TextButton(onClick = { showEditor = true }) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Text(
-                            text = if (counter.note.isNullOrBlank())
-                                "+ Dodaj bilješku"
-                            else
-                                "Bilješka: ${counter.note}"
-                        )
-                        if (counter.targetValue == null) {
-                            Text(
-                                text = "+ Postavi cilj",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
+                TextButton(
+                    onClick = { showEditor = true },
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    val label = when {
+                        counter.note.isNullOrBlank() && counter.targetValue == null ->
+                            "+ Dodaj bilješku ili cilj"
+                        counter.note.isNullOrBlank() ->
+                            "+ Dodaj bilješku  ·  Cilj: ${counter.targetValue}"
+                        counter.targetValue == null ->
+                            "Bilješka: ${counter.note}  ·  + Postavi cilj"
+                        else ->
+                            "Bilješka: ${counter.note}  ·  Cilj: ${counter.targetValue}"
                     }
+
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         }

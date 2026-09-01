@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.example.magicloop.data.local.entity.PatternAnnotationEntity
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clipToBounds
 
 private val availableColors = listOf(
     "#E53935", // crvena
@@ -62,7 +63,6 @@ fun PatternSheetSection(viewModel: PatternViewModel) {
         } else {
             val currentSheet = sheet!!
 
-            // Navigacija stranica, ako shema ima više od jedne
             if (currentSheet.pageCount > 1) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -72,7 +72,7 @@ fun PatternSheetSection(viewModel: PatternViewModel) {
                     IconButton(onClick = { viewModel.goToPage(currentPage - 1) }) {
                         Icon(Icons.Filled.ChevronLeft, contentDescription = "Prethodna stranica")
                     }
-                    Text("Stranica ${currentPage + 1} / ${currentSheet.pageCount}")
+                    Text(text= "Stranica ${currentPage + 1} / ${currentSheet.pageCount}", style= MaterialTheme.typography.bodyMedium )
                     IconButton(onClick = { viewModel.goToPage(currentPage + 1) }) {
                         Icon(Icons.Filled.ChevronRight, contentDescription = "Sljedeća stranica")
                     }
@@ -107,7 +107,6 @@ private fun PdfDrawingCanvas(
         mutableStateOf<Bitmap?>(null)
     }
 
-    // Renderira PDF stranicu kad je poznata širina canvasa
     LaunchedEffect(pdfPath, pageIndex, canvasWidthPx) {
         if (canvasWidthPx > 0) {
             pageBitmap = PdfPageRenderer.renderPage(pdfPath, pageIndex, canvasWidthPx)
@@ -115,11 +114,9 @@ private fun PdfDrawingCanvas(
         }
     }
 
-    // Trenutni potez u tijeku crtanja (u px koordinatama canvasa)
     var activeStroke by remember(pageIndex) { mutableStateOf<List<Offset>>(emptyList()) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Traka s bojama i alatima
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -157,7 +154,9 @@ private fun PdfDrawingCanvas(
                         canvasWidthPx.toFloat() / canvasHeightPx
                     else 0.75f
                 )
+                .background(Color.White)
                 .border(1.dp, Color.LightGray)
+                .clipToBounds()
                 .onSizeChanged { size ->
                     if (size.width != canvasWidthPx) canvasWidthPx = size.width
                 }
@@ -175,9 +174,19 @@ private fun PdfDrawingCanvas(
                     .fillMaxSize()
                     .pointerInput(pageIndex, selectedColor) {
                         detectDragGestures(
-                            onDragStart = { offset -> activeStroke = listOf(offset) },
+                            onDragStart = { offset ->
+                                val clamped = Offset(
+                                    offset.x.coerceIn(0f, size.width.toFloat()),
+                                    offset.y.coerceIn(0f, size.height.toFloat())
+                                )
+                                activeStroke = listOf(clamped)
+                            },
                             onDrag = { change, _ ->
-                                activeStroke = activeStroke + change.position
+                                val clamped = Offset(
+                                    change.position.x.coerceIn(0f, size.width.toFloat()),
+                                    change.position.y.coerceIn(0f, size.height.toFloat())
+                                )
+                                activeStroke = activeStroke + clamped
                             },
                             onDragEnd = {
                                 if (activeStroke.size >= 2 && canvasWidthPx > 0 && canvasHeightPx > 0) {

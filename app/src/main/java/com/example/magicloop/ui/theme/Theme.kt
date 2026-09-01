@@ -16,10 +16,12 @@ private val DarkColorScheme = darkColorScheme(
     secondary = BloomSecondaryDark,
     background = BloomBackgroundDark,
     surface = BloomSurfaceDark,
-    onPrimary = BloomBackground,
-    onSecondary = BloomBackground,
-    onBackground = BloomOnBackground,
-    onSurface = BloomOnSurfaceDark
+    onPrimary = BloomOnBackground,
+    onSecondary = BloomOnBackground,
+    onBackground = BloomOnSurfaceDark,
+    onSurface = BloomOnSurfaceDark,
+    onSurfaceVariant = BloomOnSurfaceDark.copy(alpha = 0.7f),
+    outline = BloomSecondaryDark
 )
 
 private val LightColorScheme = lightColorScheme(

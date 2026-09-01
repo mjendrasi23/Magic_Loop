@@ -172,7 +172,10 @@ fun MagicLoopNavHost(
                 )
             }
 
-            ReminderSettingsScreen(viewModel = settingsViewModel)
+            ReminderSettingsScreen(
+                viewModel = settingsViewModel,
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Stash.route) {

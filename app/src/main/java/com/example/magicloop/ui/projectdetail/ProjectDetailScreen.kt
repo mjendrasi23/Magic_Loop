@@ -73,7 +73,8 @@ fun ProjectDetailScreen(
             item {
                 Text(
                     text = "Brojači",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -83,8 +84,9 @@ fun ProjectDetailScreen(
                     onIncrement = { viewModel.increment(counter.id) },
                     onDecrement = { viewModel.decrement(counter.id) },
                     onReset = { viewModel.resetCounter(counter) },
-                    onNoteChange = { note -> viewModel.updateNote(counter, note) },
-                    onTargetChange = { target -> viewModel.updateTarget(counter, target) }
+                    onSaveSettings = { target, note ->
+                        viewModel.updateCounterSettings(counter, target, note)
+                    }
                 )
             }
 
@@ -92,7 +94,8 @@ fun ProjectDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Shema",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 PatternSheetSection(viewModel = patternViewModel)
