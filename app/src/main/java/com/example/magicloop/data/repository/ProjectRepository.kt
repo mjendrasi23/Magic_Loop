@@ -28,6 +28,7 @@ class ProjectRepository(
     fun getPatternSheet(projectId: Long): Flow<PatternSheetEntity?> =
         patternDao.getSheetForProject(projectId)
     suspend fun importPatternSheet(sheet: PatternSheetEntity): Long = patternDao.insertSheet(sheet)
+    suspend fun deletePatternSheet(sheet: PatternSheetEntity) = patternDao.deleteSheet(sheet)
     fun getAnnotations(sheetId: Long, page: Int): Flow<List<PatternAnnotationEntity>> =
         patternDao.getAnnotations(sheetId, page)
     suspend fun addAnnotation(annotation: PatternAnnotationEntity): Long =

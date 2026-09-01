@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,6 +45,8 @@ fun PatternSheetSection(viewModel: PatternViewModel) {
     val currentPage by viewModel.currentPage.collectAsState()
     val annotations by viewModel.annotations.collectAsState()
 
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -63,19 +66,42 @@ fun PatternSheetSection(viewModel: PatternViewModel) {
         } else {
             val currentSheet = sheet!!
 
-            if (currentSheet.pageCount > 1) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (currentSheet.pageCount > 1) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        IconButton(onClick = { viewModel.goToPage(currentPage - 1) }) {
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = "Prethodna stranica")
+                        }
+                        Text(
+                            text = "Stranica ${currentPage + 1} / ${currentSheet.pageCount}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        IconButton(onClick = { viewModel.goToPage(currentPage + 1) }) {
+                            Icon(Icons.Filled.ChevronRight, contentDescription = "Sljedeća stranica")
+                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                TextButton(
+                    onClick = { showDeleteConfirmation = true },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    IconButton(onClick = { viewModel.goToPage(currentPage - 1) }) {
-                        Icon(Icons.Filled.ChevronLeft, contentDescription = "Prethodna stranica")
-                    }
-                    Text(text= "Stranica ${currentPage + 1} / ${currentSheet.pageCount}", style= MaterialTheme.typography.bodyMedium )
-                    IconButton(onClick = { viewModel.goToPage(currentPage + 1) }) {
-                        Icon(Icons.Filled.ChevronRight, contentDescription = "Sljedeća stranica")
-                    }
+                    Text("Ukloni PDF", style = MaterialTheme.typography.labelMedium)
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Ukloni shemu",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
@@ -89,6 +115,30 @@ fun PatternSheetSection(viewModel: PatternViewModel) {
                 onClearPage = { viewModel.clearPageAnnotations() }
             )
         }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Ukloni shemu?") },
+            text = { Text("Jeste li sigurni da želite ukloniti PDF shemu iz ovog projekta?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePatternSheet()
+                        showDeleteConfirmation = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Ukloni")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Odustani")
+                }
+            }
+        )
     }
 }
 
@@ -139,8 +189,17 @@ private fun PdfDrawingCanvas(
                     )
                 }
             }
-            IconButton(onClick = onClearPage) {
-                Icon(Icons.Filled.Delete, contentDescription = "Obriši oznake na stranici")
+            TextButton(
+                onClick = onClearPage,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+            ) {
+                Icon(
+                    Icons.Filled.DeleteSweep,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Obriši bilješke", style = MaterialTheme.typography.labelSmall)
             }
         }
 

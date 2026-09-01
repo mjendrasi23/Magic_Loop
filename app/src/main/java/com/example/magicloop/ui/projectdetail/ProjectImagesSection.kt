@@ -5,18 +5,23 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -28,6 +33,8 @@ fun ProjectImagesSection(
     onAddImage: (Uri) -> Unit,
     onDeleteImage: (ProjectImageEntity) -> Unit
 ) {
+    var imageToDelete by remember { mutableStateOf<ProjectImageEntity?>(null) }
+
     val pickMediaLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -63,10 +70,34 @@ fun ProjectImagesSection(
                 modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 items(images, key = { it.id }) { image ->
-                    ImageThumbnail(image = image, onDelete = { onDeleteImage(image) })
+                    ImageThumbnail(image = image, onDelete = { imageToDelete = image })
                 }
             }
         }
+    }
+
+    if (imageToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { imageToDelete = null },
+            title = { Text("Obriši fotografiju?") },
+            text = { Text("Jeste li sigurni da želite trajno obrisati ovu fotografiju?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        imageToDelete?.let { onDeleteImage(it) }
+                        imageToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Obriši")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { imageToDelete = null }) {
+                    Text("Odustani")
+                }
+            }
+        )
     }
 }
 
@@ -84,19 +115,22 @@ private fun ImageThumbnail(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(8.dp))
         )
-        IconButton(
-            onClick = onDelete,
+        Surface(
+            color = Color.Black.copy(alpha = 0.5f),
+            shape = CircleShape,
             modifier = Modifier
+                .padding(4.dp)
                 .align(Alignment.TopEnd)
-                .size(24.dp)
+                .size(28.dp)
+                .clickable(onClick = onDelete)
         ) {
             Icon(
-                Icons.Filled.Close,
+                Icons.Filled.Delete,
                 contentDescription = "Ukloni",
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = Color.White,
                 modifier = Modifier
-                    .size(20.dp)
-                    .clip(RoundedCornerShape(50))
+                    .padding(4.dp)
+                    .fillMaxSize()
             )
         }
     }

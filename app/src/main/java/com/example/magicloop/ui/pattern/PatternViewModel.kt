@@ -84,4 +84,12 @@ class PatternViewModel(
             repository.clearAnnotations(currentSheet.id, _currentPage.value)
         }
     }
+
+    fun deletePatternSheet() {
+        val currentSheet = sheet.value ?: return
+        viewModelScope.launch {
+            repository.deletePatternSheet(currentSheet)
+            PdfFileManager.deletePdf(currentSheet.pdfUriPath)
+        }
+    }
 }
