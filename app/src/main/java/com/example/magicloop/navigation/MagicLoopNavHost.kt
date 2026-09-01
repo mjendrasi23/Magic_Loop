@@ -133,10 +133,12 @@ fun MagicLoopNavHost(
 
             val viewModel: ProjectDetailViewModel = viewModel(factory = detailFactory)
             val patternViewModel: PatternViewModel = viewModel(factory = patternFactory)
+            val yarnPickerViewModel: com.example.magicloop.ui.projectdetail.YarnPickerViewModel = viewModel(factory = detailFactory)
 
             ProjectDetailScreen(
                 viewModel = viewModel,
                 patternViewModel = patternViewModel,
+                yarnPickerViewModel = yarnPickerViewModel,
                 onBack = { navController.popBackStack()},
                 onShareCardClick = {projectId ->
             navController.navigate(Screen.ShareCard.createRoute(projectId)) }

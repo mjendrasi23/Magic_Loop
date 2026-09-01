@@ -24,6 +24,11 @@ fun BadgesScreen(viewModel: BadgesViewModel, onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text("Značke") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Natrag")

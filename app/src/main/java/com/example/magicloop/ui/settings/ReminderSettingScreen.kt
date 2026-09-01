@@ -34,6 +34,11 @@ fun ReminderSettingsScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Postavke podsjetnika") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Natrag")
@@ -62,7 +67,9 @@ fun ReminderSettingsScreen(
             ) {
                 Text(
                     text = "Uključi podsjetnik",
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+
                 )
                 Switch(
                     checked = settings.enabled,
