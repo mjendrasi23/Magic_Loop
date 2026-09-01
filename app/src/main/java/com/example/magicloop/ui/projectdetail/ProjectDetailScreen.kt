@@ -68,7 +68,9 @@ fun ProjectDetailScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddCounterDialog = true }) {
+            FloatingActionButton(onClick = { showAddCounterDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary) {
                 Icon(Icons.Filled.Add, contentDescription = "Dodaj brojač")
             }
         }
