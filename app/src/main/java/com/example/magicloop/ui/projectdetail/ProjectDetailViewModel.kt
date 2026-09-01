@@ -32,11 +32,15 @@ class ProjectDetailViewModel(
     val counters: StateFlow<List<CounterEntity>> = repository.getCounters(projectId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addCounter(label: String) {
+    fun addCounter(label: String, targetValue: Int? = null) {
         if (label.isBlank()) return
         viewModelScope.launch {
             repository.addCounter(
-                CounterEntity(projectId = projectId, label = label.trim())
+                CounterEntity(
+                    projectId = projectId,
+                    label = label.trim(),
+                    targetValue = targetValue
+                )
             )
         }
     }

@@ -25,6 +25,8 @@ import com.example.magicloop.gamification.BadgeUnlockEvents
 import com.example.magicloop.notification.ReminderScheduler
 import com.example.magicloop.ui.archive.ArchiveScreen
 import com.example.magicloop.ui.archive.ArchiveViewModel
+import com.example.magicloop.ui.badges.BadgesScreen
+import com.example.magicloop.ui.badges.BadgesViewModel
 import com.example.magicloop.ui.common.ViewModelFactory
 import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.projectdetail.ProjectDetailScreen
@@ -48,6 +50,8 @@ sealed class Screen(val route: String) {
     data object Archive : Screen("archive")
 
     data object Stash : Screen("stash")
+
+    data object Badges : Screen("badges")
 
     data object ShareCard : Screen("share_card/{projectId}") {
         fun createRoute(projectId: Long) = "share_card/$projectId"
@@ -105,6 +109,9 @@ fun MagicLoopNavHost(
                 },
                 onStashClick = {
                     navController.navigate(Screen.Stash.route)
+                },
+                onBadgesClick = {
+                    navController.navigate(Screen.Badges.route)
                 }
 
             )
@@ -174,6 +181,14 @@ fun MagicLoopNavHost(
             }
             val viewModel: StashViewModel = viewModel(factory = factory)
             StashScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.Badges.route) {
+            val factory = remember(badgeRepository) {
+                ViewModelFactory(repository, streakRepository, badgeRepository, badgeChecker, yarnRepository)
+            }
+            val viewModel: BadgesViewModel = viewModel(factory = factory)
+            BadgesScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
 
         composable(Screen.ShareCard.route) { backStackEntry ->

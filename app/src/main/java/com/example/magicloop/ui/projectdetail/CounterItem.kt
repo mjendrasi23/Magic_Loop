@@ -19,10 +19,12 @@ fun CounterItem(
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onReset: () -> Unit,
-    onNoteChange: (String) -> Unit
+    onNoteChange: (String) -> Unit,
+    onTargetChange: (Int?) -> Unit
 ) {
-    var showNoteEditor by remember { mutableStateOf(false) }
+    var showEditor by remember { mutableStateOf(false) }
     var noteDraft by remember(counter.id) { mutableStateOf(counter.note.orEmpty()) }
+    var targetDraft by remember(counter.id) { mutableStateOf(counter.targetValue?.toString().orEmpty()) }
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -88,33 +90,55 @@ fun CounterItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (showNoteEditor) {
-                OutlinedTextField(
-                    value = noteDraft,
-                    onValueChange = { noteDraft = it },
-                    label = { Text("Bilješka") },
-                    placeholder = { Text("npr. 'Ponoviti red 5-8 tri puta'") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (showEditor) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = targetDraft,
+                        onValueChange = { if (it.all { char -> char.isDigit() }) targetDraft = it },
+                        label = { Text("Ciljna vrijednost") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        )
+                    )
+                    OutlinedTextField(
+                        value = noteDraft,
+                        onValueChange = { noteDraft = it },
+                        label = { Text("Bilješka") },
+                        placeholder = { Text("npr. 'Ponoviti red 5-8 tri puta'") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = {
-                        showNoteEditor = false
+                        showEditor = false
                         noteDraft = counter.note.orEmpty()
+                        targetDraft = counter.targetValue?.toString().orEmpty()
                     }) { Text("Odustani") }
                     TextButton(onClick = {
                         onNoteChange(noteDraft)
-                        showNoteEditor = false
+                        onTargetChange(targetDraft.toIntOrNull())
+                        showEditor = false
                     }) { Text("Spremi") }
                 }
             } else {
-                TextButton(onClick = { showNoteEditor = true }) {
-                    Text(
-                        text = if (counter.note.isNullOrBlank())
-                            "+ Dodaj bilješku"
-                        else
-                            "Bilješka: ${counter.note}"
-                    )
+                TextButton(onClick = { showEditor = true }) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = if (counter.note.isNullOrBlank())
+                                "+ Dodaj bilješku"
+                            else
+                                "Bilješka: ${counter.note}"
+                        )
+                        if (counter.targetValue == null) {
+                            Text(
+                                text = "+ Postavi cilj",
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    }
                 }
             }
         }

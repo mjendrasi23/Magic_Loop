@@ -83,7 +83,8 @@ fun ProjectDetailScreen(
                     onIncrement = { viewModel.increment(counter.id) },
                     onDecrement = { viewModel.decrement(counter.id) },
                     onReset = { viewModel.resetCounter(counter) },
-                    onNoteChange = { note -> viewModel.updateNote(counter, note) }
+                    onNoteChange = { note -> viewModel.updateNote(counter, note) },
+                    onTargetChange = { target -> viewModel.updateTarget(counter, target) }
                 )
             }
 
@@ -111,8 +112,8 @@ fun ProjectDetailScreen(
     if (showAddCounterDialog) {
         AddCounterDialog(
             onDismiss = { showAddCounterDialog = false },
-            onConfirm = { label ->
-                viewModel.addCounter(label)
+            onConfirm = { label, target ->
+                viewModel.addCounter(label, target)
                 showAddCounterDialog = false
             }
         )
@@ -150,23 +151,38 @@ fun ProjectDetailScreen(
 @Composable
 private fun AddCounterDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String, Int?) -> Unit
 ) {
     var label by remember { mutableStateOf("") }
+    var targetValue by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Novi brojač") },
         text = {
-            OutlinedTextField(
-                value = label,
-                onValueChange = { label = it },
-                label = { Text("Naziv (npr. 'Redovi', 'Ponavljanja')") },
-                singleLine = true
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    label = { Text("Naziv (npr. 'Redovi', 'Ponavljanja')") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = targetValue,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) targetValue = it },
+                    label = { Text("Cilj (opcionalno)") },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                    )
+                )
+            }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(label) }, enabled = label.isNotBlank()) {
+            TextButton(
+                onClick = { onConfirm(label, targetValue.toIntOrNull()) },
+                enabled = label.isNotBlank()
+            ) {
                 Text("Dodaj")
             }
         },
