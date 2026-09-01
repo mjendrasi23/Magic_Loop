@@ -3,7 +3,6 @@ package com.example.magicloop.ui.sharecard
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
