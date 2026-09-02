@@ -23,7 +23,6 @@ class ShareCardViewModel(
     init {
         viewModelScope.launch {
             val project = repository.getProject(projectId).first()
-            val counters = repository.getCounters(projectId).first()
             val images = repository.getImages(projectId).first()
             val streak = streakRepository.observeStreak().first()
 
@@ -32,21 +31,14 @@ class ShareCardViewModel(
             val dateFormat = SimpleDateFormat("d. MMMM yyyy.", Locale("hr"))
             val completedText = project.completedAt?.let { dateFormat.format(Date(it)) }
 
-            val counterSummary = counters.firstOrNull()?.let { counter ->
-                "${counter.currentValue} ${counterLabelSuffix(counter.label)}"
-            }
-
             _cardData.value = ShareCardData(
                 projectName = project.name,
                 coverImagePath = images.firstOrNull()?.imagePath,
                 completedDateText = completedText,
                 needleSize = project.needleSize,
                 yarnInfo = project.yarnInfo,
-                counterSummary = counterSummary,
                 currentStreak = streak?.currentStreak ?: 0
             )
         }
     }
-
-    private fun counterLabelSuffix(label: String): String = label.lowercase()
 }

@@ -6,6 +6,5 @@ data class ShareCardData(
     val completedDateText: String?,
     val needleSize: String?,
     val yarnInfo: String?,
-    val counterSummary: String?,
     val currentStreak: Int
 )

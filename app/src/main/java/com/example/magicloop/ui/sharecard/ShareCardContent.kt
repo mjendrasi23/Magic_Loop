@@ -6,20 +6,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-
 
 @Composable
 fun ShareCardContent(data: ShareCardData) {
@@ -29,7 +28,10 @@ fun ShareCardContent(data: ShareCardData) {
             .height(450.dp)
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFFFFF3E0), Color(0xFFFFE0B2))
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surface
+                    )
                 )
             )
     ) {
@@ -50,7 +52,7 @@ fun ShareCardContent(data: ShareCardData) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFD7CCC8)),
+                            .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -64,14 +66,13 @@ fun ShareCardContent(data: ShareCardData) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(20.dp)
             ) {
                 Text(
                     text = data.projectName,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF3E2723),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Start
                 )
 
@@ -80,8 +81,8 @@ fun ShareCardContent(data: ShareCardData) {
                 if (data.completedDateText != null) {
                     Text(
                         text = "Završeno ${data.completedDateText}",
-                        fontSize = 13.sp,
-                        color = Color(0xFF6D4C41)
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
 
@@ -93,14 +94,15 @@ fun ShareCardContent(data: ShareCardData) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        listOfNotNull(data.needleSize, data.yarnInfo)
+                        val needleText = data.needleSize?.let { "$it mm" }
+                        listOfNotNull(needleText, data.yarnInfo)
                             .joinToString(" · ")
                             .takeIf { it.isNotBlank() }
                             ?.let {
                                 Text(
                                     text = it,
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF8D6E63)
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                     }
@@ -110,41 +112,31 @@ fun ShareCardContent(data: ShareCardData) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(Color(0xFFFFE0B2))
+                                .background(MaterialTheme.colorScheme.tertiaryContainer)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Icon(
                                 Icons.Filled.LocalFireDepartment,
                                 contentDescription = null,
-                                tint = Color(0xFFEF6C00),
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                 modifier = Modifier.height(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "${data.currentStreak}",
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFEF6C00)
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         }
                     }
                 }
 
-                if (data.counterSummary != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = data.counterSummary,
-                        fontSize = 13.sp,
-                        color = Color(0xFF6D4C41)
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = "Magic Loop",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFFBCAAA4)
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
             }
         }
