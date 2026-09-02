@@ -3,6 +3,8 @@ package com.example.magicloop.ui.projectdetail
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -19,8 +21,10 @@ fun CounterItem(
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onReset: () -> Unit,
+    onDelete: () -> Unit,
     onSaveSettings: (Int?, String?) -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
     var showEditor by remember { mutableStateOf(false) }
     var noteDraft by remember { mutableStateOf("") }
     var targetDraft by remember { mutableStateOf("") }
@@ -44,8 +48,35 @@ fun CounterItem(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                IconButton(onClick = onReset) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Resetiraj brojač")
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Opcije brojača")
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Resetiraj") },
+                            leadingIcon = { Icon(Icons.Default.Refresh, contentDescription = null) },
+                            onClick = {
+                                showMenu = false
+                                onReset()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Obriši") },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) },
+                            colors = MenuDefaults.itemColors(
+                                textColor = MaterialTheme.colorScheme.error,
+                                leadingIconColor = MaterialTheme.colorScheme.error
+                            ),
+                            onClick = {
+                                showMenu = false
+                                onDelete()
+                            }
+                        )
+                    }
                 }
             }
 

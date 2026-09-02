@@ -37,7 +37,8 @@ fun ReminderSettingsScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -103,7 +104,12 @@ fun ReminderSettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
-            title = { Text("Odaberi vrijeme") },
+            title = { 
+                Text(
+                    text = "Odaberi vrijeme",
+                    color = MaterialTheme.colorScheme.primary
+                ) 
+            },
             text = { TimePicker(state = timePickerState) },
             confirmButton = {
                 TextButton(onClick = {

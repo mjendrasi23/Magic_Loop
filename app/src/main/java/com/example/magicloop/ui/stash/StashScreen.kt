@@ -5,8 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,26 +26,29 @@ fun StashScreen(
     val yarnList by viewModel.yarnList.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
     var yarnToEdit by remember { mutableStateOf<YarnEntity?>(null) }
+    var yarnToDelete by remember { mutableStateOf<YarnEntity?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Zaliha vune") },
+                title = { Text("Zaliha pređe") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Natrag")
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(Icons.Filled.Add, contentDescription = "Dodaj vunu")
+            FloatingActionButton(onClick = { showAddDialog = true }, containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary) {
+                Icon(Icons.Filled.Add, contentDescription = "Dodaj pređu")
             }
         }
     ) { padding ->
@@ -54,9 +58,9 @@ fun StashScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Zaliha je prazna. Dodaj svoju prvu vunu.",
+                    text = "Zaliha je prazna. Dodaj svoju prvu pređu.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         } else {
@@ -69,7 +73,7 @@ fun StashScreen(
                     YarnCard(
                         yarn = yarn,
                         onClick = { yarnToEdit = yarn },
-                        onDelete = { viewModel.deleteYarn(yarn) }
+                        onDelete = { yarnToDelete = yarn }
                     )
                 }
             }
@@ -106,6 +110,30 @@ fun StashScreen(
             }
         )
     }
+
+    yarnToDelete?.let { yarn ->
+        AlertDialog(
+            onDismissRequest = { yarnToDelete = null },
+            title = { Text("Obriši pređu") },
+            text = { Text("Jeste li sigurni da želite obrisati pređu '${yarn.name}'? Ova radnja se ne može poništiti.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteYarn(yarn)
+                        yarnToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Obriši")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { yarnToDelete = null }) {
+                    Text("Odustani")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -130,7 +158,8 @@ private fun YarnCard(
                     Text(
                         text = yarn.name,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = listOfNotNull(yarn.brand, yarn.color, yarn.weightCategory)
@@ -142,13 +171,24 @@ private fun YarnCard(
                 Box {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
-                            androidx.compose.material.icons.Icons.Filled.MoreVert,
-                            contentDescription = "Opcije"
+                            Icons.Filled.MoreVert,
+                            contentDescription = "Opcije",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
                             text = { Text("Obriši") },
+                            leadingIcon = { 
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null
+                                ) 
+                            },
+                            colors = MenuDefaults.itemColors(
+                                textColor = MaterialTheme.colorScheme.error,
+                                leadingIconColor = MaterialTheme.colorScheme.error
+                            ),
                             onClick = { showMenu = false; onDelete() }
                         )
                     }

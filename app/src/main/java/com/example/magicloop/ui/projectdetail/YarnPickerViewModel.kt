@@ -1,4 +1,3 @@
-// ui/projectdetail/YarnPickerViewModel.kt
 package com.example.magicloop.ui.projectdetail
 
 import androidx.lifecycle.ViewModel
@@ -9,6 +8,7 @@ import com.example.magicloop.data.repository.YarnRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -23,6 +23,7 @@ class YarnPickerViewModel(
 ) : ViewModel() {
 
     val availableYarn: StateFlow<List<YarnEntity>> = repository.getAllYarn()
+        .map { list -> list.filter { it.remainingGrams > 0 } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val usedYarn: StateFlow<List<YarnUsageUiItem>> = combine(

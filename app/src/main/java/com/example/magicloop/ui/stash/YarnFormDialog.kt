@@ -38,7 +38,12 @@ fun YarnFormDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (initial == null) "Nova vuna" else "Uredi vunu") },
+        title = { 
+            Text(
+                text = if (initial == null) "Nova pređa" else "Uredi pređu",
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),

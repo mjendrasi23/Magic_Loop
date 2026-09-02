@@ -24,6 +24,7 @@ class ProjectRepository(
     suspend fun incrementCounter(counterId: Long) = counterDao.increment(counterId)
     suspend fun decrementCounter(counterId: Long) = counterDao.decrement(counterId)
     suspend fun updateCounter(counter: CounterEntity) = counterDao.update(counter)
+    suspend fun deleteCounter(counter: CounterEntity) = counterDao.delete(counter)
 
     fun getPatternSheet(projectId: Long): Flow<PatternSheetEntity?> =
         patternDao.getSheetForProject(projectId)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -37,6 +38,7 @@ fun ProjectListScreen(
     val projects by viewModel.projects.collectAsState()
     val streakState by streakViewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var projectToDelete by remember { mutableStateOf<ProjectEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -50,7 +52,7 @@ fun ProjectListScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
                 ),
                 actions = {
                     IconButton(onClick = onSettingsClick) {
@@ -92,7 +94,7 @@ fun ProjectListScreen(
                     ProjectCard(
                         project = project,
                         onClick = { onProjectClick(project.id) },
-                        onDelete = { viewModel.deleteProject(project) }
+                        onDelete = { projectToDelete = project }
                     )
                 }
             }
@@ -110,6 +112,30 @@ fun ProjectListScreen(
             }
         )
     }
+
+    projectToDelete?.let { project ->
+        AlertDialog(
+            onDismissRequest = { projectToDelete = null },
+            title = { Text("Obriši projekt") },
+            text = { Text("Jeste li sigurni da želite obrisati projekt '${project.name}'? Ova radnja se ne može poništiti.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteProject(project)
+                        projectToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Obriši")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { projectToDelete = null }) {
+                    Text("Odustani")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -122,7 +148,8 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             Text(
                 text = "Još nemaš nijedan projekt",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -169,8 +196,13 @@ private fun ProjectCard(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+                val dateText = if (project.status == "COMPLETED" && project.completedAt != null) {
+                    "Završeno ${dateFormat.format(Date(project.completedAt))}"
+                } else {
+                    "Započeto ${dateFormat.format(Date(project.createdAt))}"
+                }
                 Text(
-                    text = "Započeto ${dateFormat.format(Date(project.createdAt))}",
+                    text = dateText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -188,6 +220,16 @@ private fun ProjectCard(
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                     DropdownMenuItem(
                         text = { Text("Obriši") },
+                        leadingIcon = { 
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null
+                            ) 
+                        },
+                        colors = MenuDefaults.itemColors(
+                            textColor = MaterialTheme.colorScheme.error,
+                            leadingIconColor = MaterialTheme.colorScheme.error
+                        ),
                         onClick = {
                             showMenu = false
                             onDelete()
@@ -225,7 +267,12 @@ private fun AddProjectDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Novi projekt") },
+        title = { 
+            Text(
+                text = "Novi projekt",
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             OutlinedTextField(
                 value = name,

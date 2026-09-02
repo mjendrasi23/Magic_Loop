@@ -85,6 +85,12 @@ class ProjectDetailViewModel(
         }
     }
 
+    fun deleteCounter(counter: CounterEntity) {
+        viewModelScope.launch {
+            repository.deleteCounter(counter)
+        }
+    }
+
     val images: StateFlow<List<ProjectImageEntity>> = repository.getImages(projectId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

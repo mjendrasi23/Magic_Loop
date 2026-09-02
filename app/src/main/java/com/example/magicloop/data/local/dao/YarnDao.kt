@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface YarnDao {
-    @Query("SELECT * FROM yarn_stash ORDER BY addedAt DESC")
+    @Query("SELECT * FROM yarn_stash ORDER BY remainingGrams > 0 DESC, addedAt DESC")
     fun getAllYarn(): Flow<List<YarnEntity>>
 
     @Query("SELECT * FROM yarn_stash WHERE id = :id")

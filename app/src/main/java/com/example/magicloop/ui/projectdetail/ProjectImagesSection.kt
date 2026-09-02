@@ -47,13 +47,21 @@ fun ProjectImagesSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Fotografije", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = "Fotografije",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
             IconButton(onClick = {
                 pickMediaLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             }) {
-                Icon(Icons.Filled.AddAPhoto, contentDescription = "Dodaj fotografiju")
+                Icon(
+                    imageVector = Icons.Filled.AddAPhoto,
+                    contentDescription = "Dodaj fotografiju",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
 

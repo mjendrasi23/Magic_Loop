@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.example.magicloop.data.local.entity.ProjectEntity
 import com.example.magicloop.data.local.entity.YarnEntity
+import com.example.magicloop.data.local.entity.CounterEntity
 import com.example.magicloop.ui.pattern.PatternViewModel
 import com.example.magicloop.ui.pattern.PatternSheetSection
 
@@ -39,6 +40,7 @@ fun ProjectDetailScreen(
     var showYarnDialog by remember { mutableStateOf(false) }
     var showCompleteDialog by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
+    var counterToDelete by remember { mutableStateOf<CounterEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -47,7 +49,8 @@ fun ProjectDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -97,12 +100,16 @@ fun ProjectDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Vuna iz zalihe",
+                        text = "Pređa iz zalihe",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
                     IconButton(onClick = { showYarnDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Dodaj vunu iz zalihe")
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Dodaj vunu iz zalihe",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
@@ -128,6 +135,7 @@ fun ProjectDetailScreen(
                     onIncrement = { viewModel.increment(counter.id) },
                     onDecrement = { viewModel.decrement(counter.id) },
                     onReset = { viewModel.resetCounter(counter) },
+                    onDelete = { counterToDelete = counter },
                     onSaveSettings = { target, note ->
                         viewModel.updateCounterSettings(counter, target, note)
                     }
@@ -208,6 +216,30 @@ fun ProjectDetailScreen(
             }
         )
     }
+
+    counterToDelete?.let { counter ->
+        AlertDialog(
+            onDismissRequest = { counterToDelete = null },
+            title = { Text("Obriši brojač") },
+            text = { Text("Jeste li sigurni da želite obrisati brojač '${counter.label}'?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteCounter(counter)
+                        counterToDelete = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Obriši")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { counterToDelete = null }) {
+                    Text("Odustani")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -230,7 +262,7 @@ private fun UsedYarnItem(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.yarn?.name ?: "Nepoznata vuna",
+                    text = item.yarn?.name ?: "Nepoznata pređa",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
@@ -268,9 +300,18 @@ private fun YarnAssignmentDialog(
     var gramsText by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
+    val grams = gramsText.toDoubleOrNull() ?: 0.0
+    val isAmountTooHigh = selectedYarn != null && grams > selectedYarn!!.remainingGrams
+    val isValid = selectedYarn != null && grams > 0 && !isAmountTooHigh
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Dodaj vunu iz zalihe") },
+        title = { 
+            Text(
+                text = "Dodaj pređu iz zalihe",
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ExposedDropdownMenuBox(
@@ -278,10 +319,10 @@ private fun YarnAssignmentDialog(
                     onExpandedChange = { expanded = it }
                 ) {
                     OutlinedTextField(
-                        value = selectedYarn?.let { "${it.name} (${it.remainingGrams}g)" } ?: "Odaberi vunu",
+                        value = selectedYarn?.let { "${it.name} (${it.remainingGrams}g)" } ?: "Odaberi pređu",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Vuna") },
+                        label = { Text("Pređa") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -316,6 +357,12 @@ private fun YarnAssignmentDialog(
                     onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) gramsText = it },
                     label = { Text("Količina (g)") },
                     singleLine = true,
+                    isError = isAmountTooHigh,
+                    supportingText = {
+                        if (isAmountTooHigh) {
+                            Text("Dostupno je samo ${selectedYarn?.remainingGrams} g")
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -325,12 +372,11 @@ private fun YarnAssignmentDialog(
             TextButton(
                 onClick = {
                     val yarnId = selectedYarn?.id
-                    val grams = gramsText.toDoubleOrNull()
-                    if (yarnId != null && grams != null && grams > 0) {
+                    if (yarnId != null && isValid) {
                         onConfirm(yarnId, grams)
                     }
                 },
-                enabled = selectedYarn != null && (gramsText.toDoubleOrNull() ?: 0.0) > 0
+                enabled = isValid
             ) {
                 Text("Dodaj")
             }
@@ -354,7 +400,11 @@ private fun ProjectDetailsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Detalji projekta", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "Detalji projekta",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 TextButton(onClick = onEditClick) { Text("Uredi") }
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -391,7 +441,12 @@ private fun AddCounterDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Novi brojač") },
+        title = { 
+            Text(
+                text = "Novi brojač",
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -435,7 +490,12 @@ private fun EditProjectDetailsDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Uredi detalje") },
+        title = { 
+            Text(
+                text = "Uredi detalje",
+                color = MaterialTheme.colorScheme.primary
+            ) 
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
