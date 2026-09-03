@@ -69,13 +69,6 @@ fun ProjectDetailScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showAddCounterDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary) {
-                Icon(Icons.Filled.Add, contentDescription = "Dodaj brojač")
-            }
         }
     ) { padding ->
         LazyColumn(
@@ -122,11 +115,24 @@ fun ProjectDetailScreen(
             }
 
             item {
-                Text(
-                    text = "Brojači",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Brojači",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    IconButton(onClick = { showAddCounterDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Dodaj brojač",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
 
             items(counters, key = { it.id }) { counter ->
